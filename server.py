@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
@@ -14,20 +16,48 @@ mail = Mail(app)
 
 @app.route('/send-email', methods=['POST'])
 def send_email():
-    data = request.get_json()
-    receiver_email = data['receiver_email']
-    name = data['name']
-    coordinates = data['coordinates']
-    latitude = coordinates.get('latitude')
-    longitude = coordinates.get('longitude')
-
     try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid or missing JSON payload'}), 400
+
+        receiver_email = data.get('receiver_email')
+        coordinates = data.get('coordinates')
+        name = data.get('name')
+        if not receiver_email or not coordinates:
+            return jsonify({'error': 'Missing receiver_email or coordinates in request'}), 400
+
+        latitude = coordinates.get('latitude')
+        longitude = coordinates.get('longitude')
+        if not latitude or not longitude:
+            return jsonify({'error': 'Missing latitude or longitude in coordinates'}), 400
+
+        # Create and send the email
         msg = Message('EMERGENCY ALERT', sender='rnc.ars@outlook.com', recipients=[receiver_email])
         msg.body = f"EMERGENCY ALERT\nAmbulance assistance required at the current location:\nLatitude: {latitude}, Longitude: {longitude}\n\nGoogle Maps: https://maps.google.com/?q={latitude},{longitude}"
         mail.send(msg)
+        
         return jsonify({'message': 'Email sent successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/check-status', methods=['POST'])
+def check_status():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid or missing JSON payload'}), 400
+
+        condition = data.get('condition')
+        if not condition:
+            return jsonify({'error': 'Missing condition in request'}), 400
+
+        if condition == 'yes':
+            return jsonify({'response': 'Proceed'}), 200
+        else:
+            return jsonify({'response': 'Stay'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
-    app.run("0.0.0.0" ,port =5000, debug=True)
+    app.run(debug=True)
