@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
 from flask_cors import CORS
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -32,7 +33,6 @@ def send_email():
         if not latitude or not longitude:
             return jsonify({'error': 'Missing latitude or longitude in coordinates'}), 400
 
-        # Create and send the email
         msg = Message('EMERGENCY ALERT', sender='rnc.ars@outlook.com', recipients=[receiver_email])
         msg.body = f"EMERGENCY ALERT\nAmbulance assistance required at the current location:\nLatitude: {latitude}, Longitude: {longitude}\n\nGoogle Maps: https://maps.google.com/?q={latitude},{longitude}"
         mail.send(msg)
@@ -41,23 +41,9 @@ def send_email():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/check-status', methods=['POST'])
-def check_status():
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'Invalid or missing JSON payload'}), 400
-
-        condition = data.get('condition')
-        if not condition:
-            return jsonify({'error': 'Missing condition in request'}), 400
-
-        if condition == 'yes':
-            return jsonify({'response': 'Proceed'}), 200
-        else:
-            return jsonify({'response': 'Stay'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.route('/check-trigger', methods=['GET'])
+def check_trigger():
+    return jsonify({'trigger': random.choice(['yes', 'no'])}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
