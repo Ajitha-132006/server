@@ -1,11 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
-from flask_cors import CORS
-import random
 
 app = Flask(__name__)
-CORS(app)
 
+# Mail server configuration
 app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'rnc.ars@outlook.com'
@@ -24,7 +22,6 @@ def send_email():
 
         receiver_email = data.get('receiver_email')
         coordinates = data.get('coordinates')
-        name = data.get('name')
         if not receiver_email or not coordinates:
             return jsonify({'error': 'Missing receiver_email or coordinates in request'}), 400
 
@@ -33,17 +30,14 @@ def send_email():
         if not latitude or not longitude:
             return jsonify({'error': 'Missing latitude or longitude in coordinates'}), 400
 
+        # Create and send the email
         msg = Message('EMERGENCY ALERT', sender='rnc.ars@outlook.com', recipients=[receiver_email])
         msg.body = f"EMERGENCY ALERT\nAmbulance assistance required at the current location:\nLatitude: {latitude}, Longitude: {longitude}\n\nGoogle Maps: https://maps.google.com/?q={latitude},{longitude}"
         mail.send(msg)
-        
+
         return jsonify({'message': 'Email sent successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@app.route('/check-trigger', methods=['GET'])
-def check_trigger():
-    return jsonify({'trigger': random.choice(['yes', 'no'])}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
