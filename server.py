@@ -4,10 +4,10 @@ from flask_mail import Mail, Message
 app = Flask(__name__)
 
 # Mail server configuration
-app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'rnc.ars@outlook.com'
-app.config['MAIL_PASSWORD'] = 'ars@12345'
+app.config['MAIL_USERNAME'] = 'chalasaniajitha@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ajitha*01032006'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
